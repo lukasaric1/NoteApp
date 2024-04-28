@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.noteapp.data.NotesDataSource
 import com.example.noteapp.screen.NoteScreen
 import com.example.noteapp.ui.theme.NoteAppTheme
 
@@ -20,7 +21,9 @@ class MainActivity : ComponentActivity() {
             NoteAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colorScheme.primaryContainer){
-                    NoteScreen()
+                    NoteScreen(notes = NotesDataSource().loadNotes(),
+                        onRemoveNote={},
+                        onAddNote={})
                 }
             }
         }
@@ -30,8 +33,6 @@ class MainActivity : ComponentActivity() {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    NoteAppTheme {
-
-    }
+fun NoteScreenPreview() {
+    NoteScreen(notes = NotesDataSource().loadNotes(), onAddNote = {}, onRemoveNote ={})
 }
