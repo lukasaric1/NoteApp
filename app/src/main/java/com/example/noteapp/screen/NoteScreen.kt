@@ -179,5 +179,6 @@ fun NoteRow(
 @Preview(showBackground = true)
 @Composable
 fun NotesScreenPreview() {
+
     NoteScreen(notes = NotesDataSource().loadNotes(), onAddNote = {}, onRemoveNote ={})
 }
