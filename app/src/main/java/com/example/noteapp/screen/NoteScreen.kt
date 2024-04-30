@@ -13,8 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.Create
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,11 +37,9 @@ import androidx.compose.ui.unit.dp
 import com.example.noteapp.R
 import com.example.noteapp.components.NoteButton
 import com.example.noteapp.components.NoteInputText
-import com.example.noteapp.data.NotesDataSource
 import com.example.noteapp.model.Note
-import java.text.DateFormat
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,81 +48,72 @@ fun NoteScreen(
     onAddNote: (Note) -> Unit,
     onRemoveNote: (Note) -> Unit
 ) {
-
-    var title by remember {
-        mutableStateOf("")
-    }
-    
-    var description by remember {
-        mutableStateOf("")
-    }
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
     Column(modifier = Modifier.padding(6.dp)) {
+        TopAppBar(
+            title = { Text(text = stringResource(id = R.string.app_name)) },
+            actions = { Icon(imageVector = Icons.Rounded.Create, contentDescription = "ICON") }
+        )
 
-        TopAppBar(title = {Text(text= stringResource(id = R.string.app_name)) 
-                          
-        }, 
-            
-            actions = {
-                Icon(imageVector = Icons.Rounded.Create, contentDescription = "ICON")
-            })
-
-        Column(modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-
-            NoteInputText(modifier = Modifier.padding(
-                top = 10.dp,
-                bottom = 8.dp
-            ),
-                text = title, label = "Title",
+        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            NoteInputText(
+                modifier = Modifier.padding(top = 10.dp, bottom = 8.dp),
+                text = title,
+                label = "Title",
                 onTextChange = {
-                    if (it.all{char ->
-                        char.isLetter() || char.isWhitespace()
-                        }) title = it
-                } )
+                    if (it.all { char -> char.isLetter() || char.isWhitespace() }) title = it
+                }
+            )
 
-            NoteInputText(modifier = Modifier.padding(
-                top = 10.dp,
-                bottom = 8.dp
-            ),
-                text = description, label = "Add a note",
-                onTextChange = {if (it.all{char ->
-                        char.isLetter() || char.isWhitespace()
-                    }) description = it
-                })
+            NoteInputText(
+                modifier = Modifier.padding(top = 10.dp, bottom = 8.dp),
+                text = description,
+                label = "Add a note",
+                onTextChange = {
+                    if (it.all { char -> char.isLetter() || char.isWhitespace() }) description = it
+                }
+            )
 
-            NoteButton(modifier = Modifier,
+            NoteButton(
+                modifier = Modifier,
                 text = "Save",
                 onClick = {
                     if (title.isNotEmpty() && description.isNotEmpty()) {
-                        onAddNote(Note(title = title,
-                            description = description))
+                        onAddNote(Note(title = title, description = description))
                         title = ""
                         description = ""
                         Toast.makeText(context, "Note Added", Toast.LENGTH_SHORT).show()
                     }
-                })
+                }
+            )
         }
 
         Divider(modifier = Modifier.padding(12.dp))
-        LazyColumn{
-            items(notes) { note ->
-                NoteRow(note = note,
-                    onNoteClicked = {} )
-                }
+        NoteList(notes = notes, onRemoveNote = onRemoveNote)
+    }
+}
 
-            }
+@Composable
+fun NoteList(
+    notes: List<Note>,
+    onRemoveNote: (Note) -> Unit
+) {
+    LazyColumn {
+        items(notes) { note ->
+            NoteRow(note = note, onNoteRemoveButtonClicked = { onRemoveNote(note) })
         }
     }
-
+}
 
 @Composable
 fun NoteRow(
     modifier: Modifier = Modifier,
     note: Note,
-    onNoteClicked: (Note) -> Unit
+    onNoteRemoveButtonClicked: (Note) -> Unit
 ) {
     val surfaceModifier = modifier
         .padding(4.dp)
@@ -136,11 +124,9 @@ fun NoteRow(
         color = Color(0xFFDFE613)
     ) {
         Column(
-            modifier = Modifier
-                .clickable { onNoteClicked(note) }
-                .padding(horizontal = 14.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
             horizontalAlignment = Alignment.Start
-        )  {
+        ) {
             Text(
                 text = note.title,
                 style = MaterialTheme.typography.labelMedium
@@ -157,6 +143,7 @@ fun NoteRow(
                 )
                 Icon(
                     imageVector = Icons.Default.Delete,
+                    modifier = Modifier.clickable { onNoteRemoveButtonClicked(note) },
                     contentDescription = "Delete icon"
                 )
             }
@@ -164,21 +151,16 @@ fun NoteRow(
                 text = note.entryDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                 style = MaterialTheme.typography.labelSmall
             )
-
         }
-
-
-
     }
-
-
-
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun NotesScreenPreview() {
-
-    NoteScreen(notes = NotesDataSource().loadNotes(), onAddNote = {}, onRemoveNote ={})
+    val notes = remember { mutableStateListOf<Note>() }
+    Column {
+        NoteScreen(notes = notes, onAddNote = { notes.add(it) }, onRemoveNote = { notes.remove(it) })
+    }
 }
+
