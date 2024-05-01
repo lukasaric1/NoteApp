@@ -4,11 +4,14 @@ plugins {
 
     id ("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("androidx.room")
 }
 
 android {
     namespace = "com.example.noteapp"
     compileSdk = 34
+
+
 
     defaultConfig {
         applicationId = "com.example.noteapp"
@@ -51,6 +54,15 @@ android {
 
         }
     }
+
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
+
+
+
+
+
 }
 
 dependencies {
@@ -59,6 +71,17 @@ dependencies {
     //Hilt-Dagger
     implementation("com.google.dagger:hilt-android:2.44")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+
+    //Room
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
 
 
 
